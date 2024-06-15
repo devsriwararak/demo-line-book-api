@@ -1,0 +1,14 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_USER=root
+      - DB_HOST=203.146.252.205
+      - DB_DATABASE=line-db
+      - DB_PASSWORD=5839011223
+      - DB_PORT=5432
+      - JWT_SECRET=booking_app
+    command: npm start
