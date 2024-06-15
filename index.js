@@ -1,0 +1,31 @@
+import express from "express";
+import pool from "./pool.js";
+import cors from "cors";
+import userRouter from './routes/users.js'
+import bookingRouter from './routes/bookings.js'
+import loginRouter from './routes/login.js'
+import reportRouter from './routes/reports.js'
+
+const app = express();
+const corsOptions = {
+  origin: ["http://localhost:5173"],
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+
+app.get('/', (req,res)=> {
+  res.send('ver-1')
+})
+
+app.use('/api/user', userRouter)
+app.use('/api/booking', bookingRouter)
+app.use('/api/login', loginRouter)
+app.use('/api/report', reportRouter)
+
+
+app.listen(5000, () => {
+  console.log("server is 5000");
+});
+
+
+
