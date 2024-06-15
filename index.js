@@ -10,7 +10,7 @@ const app = express();
 const corsOptions = {
   origin: ["http://localhost:5173"],
 };
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req,res)=> {
