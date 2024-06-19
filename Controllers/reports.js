@@ -5,7 +5,7 @@ export const searchDate = async (req, res) => {
   const { date } = req.body;
   try {
     const db = await pool.connect();
-    let sql = `SELECT id, TO_CHAR(date + INTERVAL '543 years', 'DD-MM-YYYY') AS date  , time_start, time_end  FROM booking `;
+    let sql = `SELECT id, TO_CHAR(date , 'DD-MM-YYYY') AS date  , time_start, time_end  FROM booking `;
     let params = [];
     if (date) {
       sql += ` WHERE date = $1`;
@@ -52,11 +52,12 @@ export const GetReportUsers = async (req, res) => {
     }
     const result = await db.query(sql, params);
 
-    // res.status(200).json({
-    //   data: result.rows,
-    //   count: result.rows.reduce((acc, item)=> acc + parseInt(item.count, 10), 0).toString(),
-    // });
-    res.status(200).json(result.rows);
+    res.status(200).json({
+      data: result.rows,
+      count: result.rows.reduce((acc, item)=> acc + parseInt(item.count, 10), 0).toString(),
+      sum_count: result.rows.reduce((acc, item)=> acc + parseInt(item.sum_count, 10), 0).toString(),
+    });
+    // res.status(200).json(result.rows);
   } catch (error) {
     console.error("Error executing SQL query:", error.message);
     res.status(500).json(error.message);
@@ -71,7 +72,7 @@ export const getReportUserById = async(req,res)=> {
   const db = await pool.connect()
   try {
       const sql = `
-    SELECT users.name
+    SELECT users.name , add_class.trade
     FROM add_class
     INNER JOIN users ON add_class.users_id = users.id
     WHERE add_class.booking_id = $1
