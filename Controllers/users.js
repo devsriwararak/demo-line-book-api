@@ -94,9 +94,7 @@ export const getMyUserData = async (req, res) => {
       }
       const result = await db.query(sql, params);
       res.status(200).json(result.rows);
-    } else {
-      res.status(200).json({ message: "ไม่พบข้อมูล" });
-    }
+    } 
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
