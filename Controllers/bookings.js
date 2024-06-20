@@ -10,11 +10,12 @@ export const getBookings = async (req, res) => {
     let sql = `SELECT id, time_start, time_end, count, date FROM booking`;
     const params = [];
     if (date) {
-      sql += ` WHERE date = $1`;
+      sql += ` WHERE date = $1 ORDER BY time_start ASC`;
       params.push(date);
+    } else {
+      sql += ` ORDER BY date DESC `;
     }
     const result = await db.query(sql, params);
-
     const NewResult = result.rows.map((row) => {
       const formattedDate = format(new Date(row.date), "dd-MM-yyyy", {
         locale: th,
@@ -28,8 +29,8 @@ export const getBookings = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
-  }finally{
-    db.release()
+  } finally {
+    db.release();
   }
 };
 
@@ -39,7 +40,6 @@ export const postInsertBooking = async (req, res) => {
   const { date, time_start, time_end, count } = req.body;
   const db = await pool.connect();
   try {
-   
     const sqlCheck = `SELECT time_start , time_end FROM booking WHERE date = $1`;
     const resultCheck = await db.query(sqlCheck, [date]);
     // console.log(resultCheck.rows);
@@ -58,8 +58,8 @@ export const postInsertBooking = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
-  }finally{
-    db.release()
+  } finally {
+    db.release();
   }
 };
 
@@ -68,17 +68,16 @@ export const deleteBooking = async (req, res) => {
   const { id } = req.params;
   const db = await pool.connect();
   try {
-    
     const sql = `DELETE FROM booking WHERE id = $1`;
     await db.query(sql, [id]);
-    const sqlDeleteAddClass = `DELETE FROM add_class WHERE booking_id = $1`
-    await db.query(sqlDeleteAddClass, [id])
+    const sqlDeleteAddClass = `DELETE FROM add_class WHERE booking_id = $1`;
+    await db.query(sqlDeleteAddClass, [id]);
     res.status(200).json({ message: "ลบสำเร็จ" });
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
-  }finally{
-    db.release()
+  } finally {
+    db.release();
   }
 };
 
@@ -89,35 +88,31 @@ export const editBooking = async (req, res) => {
   const db = await pool.connect();
 
   try {
-    
-    const sqlCheck = `SELECT time_start , time_end FROM booking WHERE date = $1`;
+    const sqlCheck = `SELECT  time_start , time_end FROM booking WHERE date = $1`;
     const resultCheck = await db.query(sqlCheck, [date]);
 
     // ตรวจสอบการซ้อนทับของเวลา
     if (checkTimeOverlap(time_start, time_end, resultCheck.rows)) {
-      console.log('11111111111');
-      // return res
-      //   .status(400)
-      //   .json({ message: "ช่วงเวลาที่เลือกซ้อนทับกับการจองที่มีอยู่แล้ว" });
-      throw new Error ('ช่วงเวลาที่เลือกซ้อนทับกับการจองที่มีอยู่แล้ว')
+      console.log("11111111111");
+      // throw new Error ('ช่วงเวลาที่เลือกซ้อนทับกับการจองที่มีอยู่แล้ว')
     }
 
     // เช็คว่าจองมาแล้วกี่คน
-    const sqlCheckClass = `SELECT id FROM add_class WHERE booking_id = $1`
-    const resultCheckClass = await db.query(sqlCheckClass, [id])
-    if(count <= resultCheckClass.rows.length) {
-      console.log('222222222222');
-            throw new Error ('มีคนจองมากกว่าจำนวนที่ใส่มา กรุณาเพิ่มจำนวนอีก')
+    const sqlCheckClass = `SELECT id FROM add_class WHERE booking_id = $1`;
+    const resultCheckClass = await db.query(sqlCheckClass, [id]);
+    if (count <= resultCheckClass.rows.length) {
+      console.log("222222222222");
+      throw new Error("มีคนจองมากกว่าจำนวนที่ใส่มา กรุณาเพิ่มจำนวนอีก");
     }
 
-    const sql = `UPDATE booking SET date=$1, time_start=$2, time_end=$3, count=$4 WHERE id = $5`
-    await db.query(sql, [date, time_start, time_end, count , id])
-    res.status(200).json({message: 'ทำรายการสำเร็จ'})
+    const sql = `UPDATE booking SET date=$1, time_start=$2, time_end=$3, count=$4 WHERE id = $5`;
+    await db.query(sql, [date, time_start, time_end, count, id]);
+    res.status(200).json({ message: "ทำรายการสำเร็จ" });
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
-  }finally{
-    db.release()
+  } finally {
+    db.release();
   }
 };
 
@@ -131,7 +126,7 @@ const checkTimeOverlap = (time_start, time_end, existingBookings) => {
       (time_start >= existingStart && time_start < existingEnd) ||
       (time_end > existingStart && time_end <= existingEnd) ||
       (time_start <= existingStart && time_end >= existingEnd) ||
-      (time_end <=  time_start )
+      time_end <= time_start
     ) {
       return true; // มีการซ้อนทับของเวลา
     }
