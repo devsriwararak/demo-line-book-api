@@ -11,7 +11,10 @@ export const searchDate = async (req, res) => {
       sql += ` WHERE date = $1`;
       params.push(date);
     }
+
+    sql += ` ORDER BY time_start ASC`
     const result = await db.query(sql, params);
+
     db.release();
     res.status(200).json(result.rows);
   } catch (error) {
@@ -19,7 +22,6 @@ export const searchDate = async (req, res) => {
     res.status(500).json(error.message);
   }
 };
-
 
 
 export const GetReportUsers = async (req, res) => {
@@ -50,6 +52,8 @@ export const GetReportUsers = async (req, res) => {
       sql += ` WHERE  booking.date = $1 `;
       params.push(date);
     }
+
+    sql += ` ORDER BY booking.date DESC, booking.time_start ASC  `
     const result = await db.query(sql, params);
 
     res.status(200).json({
@@ -72,7 +76,7 @@ export const getReportUserById = async(req,res)=> {
   const db = await pool.connect()
   try {
       const sql = `
-    SELECT users.name , add_class.trade
+    SELECT users.name , add_class.trade , users.image
     FROM add_class
     INNER JOIN users ON add_class.users_id = users.id
     WHERE add_class.booking_id = $1

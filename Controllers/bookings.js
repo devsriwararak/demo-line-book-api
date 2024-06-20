@@ -13,7 +13,7 @@ export const getBookings = async (req, res) => {
       sql += ` WHERE date = $1 ORDER BY time_start ASC`;
       params.push(date);
     } else {
-      sql += ` ORDER BY date DESC `;
+      sql += ` ORDER BY date DESC , time_start ASC `;
     }
     const result = await db.query(sql, params);
     const NewResult = result.rows.map((row) => {

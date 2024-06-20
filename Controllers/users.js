@@ -39,12 +39,12 @@ export const postUserBooking = async (req, res) => {
 
     // ถ้ายังไม่มี ให้เพิ่ม User ใหม่
     let return_id = 0;
-    // if (resultCheckUser.rows.length === 0) {
-    //   const sql = `INSERT INTO users (user_id, image, name) VALUES ($1,$2,$3) RETURNING id`;
-    //   const result = await db.query(sql, [user_id, image, name]);
-    //   console.log("เพิ่มผู้ใช้งานใหม่ สำเร็จ", result.rows[0]);
-    //   return_id = result.rows[0].id;
-    // }
+    if (resultCheckUser.rows.length === 0) {
+      const sql = `INSERT INTO users (user_id, image, name) VALUES ($1,$2,$3) RETURNING id`;
+      const result = await db.query(sql, [user_id, image, name]);
+      console.log("เพิ่มผู้ใช้งานใหม่ สำเร็จ", result.rows[0]);
+      return_id = result.rows[0].id;
+    }
     const resultId = return_id === 0 ? resultCheckUser.rows[0].id : return_id;
 
     // เช็คว่ามีข้อมูลมาครบไหม
@@ -57,18 +57,6 @@ export const postUserBooking = async (req, res) => {
     console.log(resultCheck.rows);
     if (resultCheck.rows.length > 0)
       throw new Error("คุณได้จองวันนี้ และเวลานี้ไปแล้ว");
-
-    // ขอวิธีที่ทำงานเร็วกว่านี้
-    // const sqlCheck_1 = `SELECT count FROM booking WHERE id = $1`
-    // const resultCheck_1 = await db.query(sqlCheck_1, [booking_id])
-    // const count = resultCheck_1.rows[0]?.count
-
-    // const sqlCheck_2 = `SELECT COUNT(id) as count FROM add_class WHERE booking_id = $1`
-    // const resultCheck_2 = await db.query(sqlCheck_2, [booking_id])
-    // const sumCount = resultCheck_2.rows[0]?.count
-
-    // console.log(sumCount);
-    // if(count === sumCount ) throw new Error ('ห้องเรียนเต็มแล้ว กรุณาจองเวลาใหม่')
 
     const sqlCheckFullRoom = `
     SELECT 
@@ -87,10 +75,10 @@ export const postUserBooking = async (req, res) => {
     }
 
     // บันทึกการจออง
-    // const sqlAdd = `INSERT INTO add_class (users_id, booking_id, trade ) VALUES ($1,$2,$3)`;
-    // await db.query(sqlAdd, [resultId, booking_id, trade]);
+    const sqlAdd = `INSERT INTO add_class (users_id, booking_id, trade ) VALUES ($1,$2,$3)`;
+    await db.query(sqlAdd, [resultId, booking_id, trade]);
 
-    // res.status(200).json({ message: "ทำรายการสำเร็จ" });
+    res.status(200).json({ message: "ทำรายการสำเร็จ" });
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
