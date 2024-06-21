@@ -26,13 +26,17 @@ export const searchDate = async (req, res) => {
 
 export const GetReportUsers = async (req, res) => {
   const { date, id } = req.body;
+
+  const page = parseInt(req.body.page) || 1
+  const limit = 5
+  const offset = (page - 1) * limit
+
   const db = await pool.connect();
 
   try {
     let sql = `SELECT 
         booking.id, 
         TO_CHAR( booking.date , 'DD-MM-YYYY') AS date  ,
-       
         booking.time_start, 
         booking.time_end,
         booking.count,
@@ -45,21 +49,38 @@ export const GetReportUsers = async (req, res) => {
         booking.id = count_table.booking_id
        `;
     const params = [];
+    let paramIndex = 1;
+
     if (date && id) {
-      sql += ` WHERE  booking.date = $1 AND booking.id = $2 `;
+      sql += ` WHERE  booking.date = $${paramIndex} AND booking.id = $${paramIndex + 1} `;
+      paramIndex +=2
       params.push(date, id);
     } else if (date) {
-      sql += ` WHERE  booking.date = $1 `;
+      sql += ` WHERE  booking.date = $${paramIndex}`;
       params.push(date);
+      paramIndex += 1;
     }
 
-    sql += ` ORDER BY booking.date DESC, booking.time_start ASC  `
+    sql += ` ORDER BY booking.date DESC, booking.time_start ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}   `
+    params.push(limit, offset)
+
+
     const result = await db.query(sql, params);
 
+    const sum_count = result.rows.reduce((acc, item)=> acc + parseInt(item.sum_count, 10), 0).toString()
+    const totalPages = Math.ceil(sum_count / limit);
+
+  
+
+    console.log(result.rows);
+    console.log('sum_count : ', sum_count);
+
     res.status(200).json({
-      data: result.rows,
+      items: result.rows,
       count: result.rows.reduce((acc, item)=> acc + parseInt(item.count, 10), 0).toString(),
-      sum_count: result.rows.reduce((acc, item)=> acc + parseInt(item.sum_count, 10), 0).toString(),
+      sum_count ,
+      totalPages ,
+      currentPage: page,
     });
     // res.status(200).json(result.rows);
   } catch (error) {

@@ -4,18 +4,29 @@ import { th } from "date-fns/locale"; // นำเข้า locale ภาษา�
 
 export const getBookings = async (req, res) => {
   const { date } = req.body;
+
+  const page = parseInt(req.body.page) || 1;
+  const limit = 8;
+  const offset = (page - 1) * limit;
+
   const db = await pool.connect();
 
   try {
-    let sql = `SELECT id, time_start, time_end, count, date FROM booking`;
+    let sql = `SELECT id, time_start, time_end, count, date , COUNT(id) OVER() as count_data FROM booking`;
     const params = [];
     if (date) {
-      sql += ` WHERE date = $1 ORDER BY time_start ASC`;
-      params.push(date);
+      sql += ` WHERE date = $1 ORDER BY time_start ASC LIMIT $2 OFFSET $3`;
+      params.push(date, limit, offset);
     } else {
-      sql += ` ORDER BY date DESC , time_start ASC `;
+      sql += ` ORDER BY date DESC , time_start ASC LIMIT $1 OFFSET $2 `;
+      params.push(limit, offset)
     }
+
     const result = await db.query(sql, params);
+
+    const totalItems = parseInt(result.rows[0].count_data, 10);
+    const totalPages = Math.ceil(totalItems / limit);
+
     const NewResult = result.rows.map((row) => {
       const formattedDate = format(new Date(row.date), "dd-MM-yyyy", {
         locale: th,
@@ -25,7 +36,13 @@ export const getBookings = async (req, res) => {
         date: formattedDate,
       };
     });
-    res.status(200).json(NewResult);
+
+    res.status(200).json({
+      items:NewResult,
+      totalPages: totalPages,
+      currentPage: page,
+
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json(error.message);
