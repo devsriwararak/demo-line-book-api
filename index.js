@@ -7,6 +7,7 @@ import loginRouter from './routes/login.js'
 import reportRouter from './routes/reports.js'
 
 const app = express();
+const PORT = process.env.PORT || 8080;
 const corsOptions = {
   origin: ["http://localhost:5173"],
 };
@@ -23,7 +24,7 @@ app.use('/api/login', loginRouter)
 app.use('/api/report', reportRouter)
 
 
-app.listen(5000, () => {
+app.listen(PORT, () => {
   console.log("server is 5000");
 });
 
