@@ -24,7 +24,7 @@ export const getBookings = async (req, res) => {
 
     const result = await db.query(sql, params);
 
-    const totalItems = parseInt(result.rows[0].count_data, 10);
+    const totalItems = parseInt(result?.rows[0]?.count_data , 10 );
     const totalPages = Math.ceil(totalItems / limit);
 
     const NewResult = result.rows.map((row) => {
