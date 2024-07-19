@@ -51,8 +51,7 @@ export const getBookings = async (req, res) => {
   }
 };
 
-// node.js express
-// ต้องการแยกฟังชั่น ตรวจสอบเวลาออก และเรียกใช้ในนี้
+
 export const postInsertBooking = async (req, res) => {
   const { date, time_start, time_end, count } = req.body;
   const db = await pool.connect();

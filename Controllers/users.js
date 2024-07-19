@@ -29,10 +29,10 @@ export const getUserDate = async (req, res) => {
 };
 
 export const postUserBooking = async (req, res) => {
-  const { user_id, name, image, date, booking_id, trade } = req.body;
+  const { user_id, name, image, date, booking_id, trade, full_name, address } = req.body;
   const db = await pool.connect();
   try {
-    if (!user_id) throw new Error("ไม่พบ User_id");
+    if (!user_id ) throw new Error("ส่งข้อมูลไม่ครบ");
     // เช็คผู้ใช้งานซ้ำ
     const sqlCheckUser = `SELECT id FROM users WHERE user_id = $1 `;
     const resultCheckUser = await db.query(sqlCheckUser, [user_id]);
@@ -48,7 +48,7 @@ export const postUserBooking = async (req, res) => {
     const resultId = return_id === 0 ? resultCheckUser.rows[0].id : return_id;
 
     // เช็คว่ามีข้อมูลมาครบไหม
-    if (!booking_id || !trade)
+    if (!booking_id || !trade || !full_name || !address)
       throw new Error("ไม่พบข้อมูล booking_id และ trade");
 
     // ป้องกันการจองซ้ำ
@@ -75,8 +75,8 @@ export const postUserBooking = async (req, res) => {
     }
 
     // บันทึกการจออง
-    const sqlAdd = `INSERT INTO add_class (users_id, booking_id, trade ) VALUES ($1,$2,$3)`;
-    await db.query(sqlAdd, [resultId, booking_id, trade]);
+    const sqlAdd = `INSERT INTO add_class (users_id, booking_id, trade, full_name, address ) VALUES ($1,$2,$3,$4,$5)`;
+    await db.query(sqlAdd, [resultId, booking_id, trade, full_name, address]);
 
     res.status(200).json({ message: "ทำรายการสำเร็จ" });
   } catch (error) {

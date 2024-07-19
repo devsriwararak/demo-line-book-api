@@ -9,9 +9,9 @@ import reportRouter from './routes/reports.js'
 const app = express();
 const PORT = process.env.PORT || 8080;
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173", "https://reserve-classroom.netlify.app"],
 };
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req,res)=> {
