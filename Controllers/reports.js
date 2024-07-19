@@ -97,7 +97,7 @@ export const getReportUserById = async(req,res)=> {
   const db = await pool.connect()
   try {
       const sql = `
-    SELECT users.name , add_class.trade , users.image
+    SELECT users.name , add_class.trade , add_class.full_name, add_class.address, users.image
     FROM add_class
     INNER JOIN users ON add_class.users_id = users.id
     WHERE add_class.booking_id = $1

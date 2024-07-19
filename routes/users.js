@@ -5,7 +5,7 @@ const route = express.Router()
 
 route.get('/', auth, getUsers)
 route.get('/date', auth, getUserDate)
-route.post('/booking' , postUserBooking )
+route.post('/booking', auth , postUserBooking )
 route.post('/mybook', auth, getMyUserData)
 
 export default route
